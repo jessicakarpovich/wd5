@@ -1,0 +1,29 @@
+html {
+    font-size: 62.5%;
+}
+
+body {
+    font-size: $font-size;
+}
+
+
+
+
+h1 {
+    font-size: $font-size-h1;
+}
+
+
+
+.sidebar {
+    width: 28rem;
+    background-color: #eee;
+    
+    li {
+        cursor: pointer;
+    }
+    
+    .active {
+        background-color: #ccc;
+    }
+}

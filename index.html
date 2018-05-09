@@ -12,17 +12,27 @@
     
     <body>
         <header>
+            <p><span>Menu Icon</span></p>
             <h1>Kanji Review</h1>
         </header>
         
         <div class="content">
-            <nav>
-                <a href="index.html">Home</a>
+            <!-- sidebar -->
+            <nav class="sidebar">
+                <ul>
+                    <!-- Replace Icon text with font awesome icons later -->
+                    <!-- On click, take to right view and add active class for styling -->
+                    <li class="js-home-link link active"><span>Icon</span>High Scores</li>
+                    <li class="js-review-link link"><span>Icon</span>Kanji Overview</li>
+                    <li class="js-game-link link"><span>Icon</span>Review Game</li>
+                    <li class="js-search-link link"><span>Icon</span>Kanji Search</li>
+                </ul>
             </nav>
+            
+            <section class="js-view">
+                <!-- Insert content through view here -->
+            </section>
         </div>
-    
-        <footer>
-            <p>© Copyright 2018 All rights reserved</p>
-        </footer>
+        <script src="scripts/main.js"></script>
     </body>
 </html>
