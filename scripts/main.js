@@ -36,6 +36,18 @@ class Model {
         
         // add event listeners
         this.addListeners();
+        
+        /*** Variables to be used across fetch requests ***/
+        // Key from mashape 
+        this.key = "3SIUgT55Vxmsht3cVhbNhsPpXEPtp1NZQ84jsn24FyCRXTvJEB";
+        // Custom headers, needed if not using node and their custom library
+        this.myHeaders = new Headers();
+        // pass the key, do it as on mashape
+        this.myHeaders.append("X-Mashape-Key", "3SIUgT55Vxmsht3cVhbNhsPpXEPtp1NZQ84jsn24FyCRXTvJEB");
+        this.myHeaders.append("Accept", "application/json");
+        // use myInit as in fetch documentation on MDN
+        this.myInit = { headers: this.myHeaders };
+        this.url = "";
     }
     addListeners() {
         // listener to use fetch to get search results if input is valid
@@ -45,7 +57,30 @@ class Model {
     getKanjiSearchResult(e) {
         // if the user didn't leave the search field blank, continue
         if (e.userValue.trim() !== "") {
-            console.log("okay");
+            // build the url
+            const api_endpoint = "https://kanjialive-api.p.mashape.com/api/public/kanji/";
+            this.url = api_endpoint + e.userValue.trim();
+            
+            //Build request object and pass it to fetch
+            const request = new Request(this.url, this.myInit);
+            
+            fetch(request) 
+                .then(response => response.json())
+                .then(results => {
+                    let event  = new Event("search-results");   // create new event, add results
+                
+                    if (results.error) {    // if there is an error give it
+                        event.message = "No kanji of " + e.userValue + " in database.";
+                    }
+                    else if (results.kanji) {   // if there is kanji give it
+                        event.meaning = results.kanji.meaning.english;
+                        event.grade = results.references.grade;
+                    }
+                    document.dispatchEvent(event);
+            })
+                .catch(function(error) {
+                    console.log(error);
+            });
         }
     }
 }
@@ -81,7 +116,11 @@ class View {
                 document.dispatchEvent(evt);
             });
         }
+        
+        /*** listeners for kanji search results ***/
+        document.addEventListener("search-results", this.displaySearchResults);
     }
+    /*** function to display the correct page based on the link ***/
     displayPage(link) {
         // clear contents
         this.mainCont.innerHTML = "";
@@ -103,6 +142,22 @@ class View {
             this.mainCont.innerHTML = content;
             let event  = new Event("page-loaded");
             document.dispatchEvent(event);
+        }
+    }
+    /*** for adding search results to Kanji Search page ***/
+    displaySearchResults(e) {
+        // if user is searching for kanji and no kanji is found, display the message
+        if (e.message && document.querySelector(".search-result")) {
+            let cont = document.querySelector(".search-result");
+            let content = "<p>" + e.message + "</p>";
+            cont.innerHTML = content;
+        }
+        // if the kanji is found, show the meaning and grade level
+        else if (e.meaning && document.querySelector(".search-result")) {
+            let cont = document.querySelector(".search-result");
+            let content = "<p>Meaning: " + e.meaning + "</p>";
+            content += "<p>Grade Level: " + e.grade + "</p>";
+            cont.innerHTML = content;
         }
     }
 }
