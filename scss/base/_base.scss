@@ -27,3 +27,22 @@ h1 {
         background-color: #ccc;
     }
 }
+
+
+
+.kanji-grades {
+    display: flex;
+    flex-direction: column;
+}
+
+
+// currently all icons are spans
+// for the time being to make them look clickable, change pointer
+span {
+    cursor: pointer;
+}
+
+
+.disabled {
+    color: #999;
+}

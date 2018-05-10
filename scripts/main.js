@@ -10,7 +10,7 @@ class Controller {
         this.view = new View();
         
         this.kanjiArray = [];
-        this.index = -1;
+        this.index = 0;
         
         /*** add event listeners for custom events here ***/
         /*** don't add them on page load or their # will increase on each reload ***/
@@ -18,6 +18,7 @@ class Controller {
         document.addEventListener("page-loaded", this.addListeners.bind(this));
         /*** listeners for overview page View btn results ***/
         document.addEventListener("show-overview", this.saveArrayGetDetails.bind(this));
+        
     }
     addListeners() {
         // if there are view buttons (user is on overview page) add listeners to view buttons
@@ -27,9 +28,24 @@ class Controller {
                 viewBtns[i].addEventListener("click", this.model.getKanjiByLevel);
             }
         }
-        
-        /*** listeners for overview page View btn results ***/
-        //document.addEventListener("show-overview", this.saveArrayGetDetails.bind(this));
+        // if on overview page the close button is clicked
+        if (document.querySelector(".view-kanji")) {
+            // add listener to close btn; hide kanji results show grade levels
+            let closeBtn = document.querySelector(".close-btn");
+            closeBtn.addEventListener("click", function() {
+                let gradeCont = document.querySelector(".kanji-grades");
+                gradeCont.style.display = "flex";
+                let infoCont = document.querySelector(".kanji-info");
+                infoCont.style.display = "none";
+            });
+            
+            // add listener to back button
+            let backBtn = document.querySelector(".back-btn");
+            backBtn.addEventListener("click", this.showPreviousKanji.bind(this));
+            // add listener to next button
+            let nextBtn = document.querySelector(".next-btn");
+            nextBtn.addEventListener("click", this.showNextKanji.bind(this));
+        }
         
         // if page has search button, add listener
         if (document.querySelector(".kanji-search")) {
@@ -44,16 +60,46 @@ class Controller {
             }, false);
         }
     }
-    saveArrayGetDetails(e) {
-        // save array and reset index
-        this.kanjiArray = e.kanjiArray;
-        this.index = 0;
-        
+    getKanji() {
         // create custom event and pass the kanji to get details for
         let query = this.kanjiArray[this.index].kanji.character;
         let evt = new Event("get-search-results");
         evt.userValue = query;
         document.dispatchEvent(evt);
+    }
+    saveArrayGetDetails(e) {
+        // save array and reset index
+        this.kanjiArray = e.kanjiArray;
+        this.index = 0;
+        
+        this.getKanji();
+    }
+    // display the previous kanji in the overview page
+    showPreviousKanji(e) {
+        if (this.index === this.kanjiArray.length - 1) {
+            document.querySelector(".next-btn").classList.remove("disabled");
+        }
+        if (this.index === 1) {     
+            e.target.classList.add("disabled");
+        }
+        if (this.index > 0) {
+            this.index--;
+            
+            this.getKanji();
+        }
+    }
+    // display the next kanji in the overview page
+    showNextKanji(e) {
+        if (this.index === 0) {
+            document.querySelector(".back-btn").classList.remove("disabled");
+        }
+        if (this.index === (this.kanjiArray.length-2)) {
+            e.target.classList.add("disabled");
+        }
+        if (this.index < (this.kanjiArray.length - 1)) {
+            this.index++;
+            this.getKanji();
+        }
     }
 }
 
@@ -99,7 +145,6 @@ class Model {
         fetch(request) 
                 .then(response => response.json())
                 .then(results => {
-                    //console.log(results);
                     let event  = new Event("show-overview");   // create new event, add results
                     event.kanjiArray = results;
                     document.dispatchEvent(event);
@@ -122,7 +167,6 @@ class Model {
             fetch(request) 
                 .then(response => response.json())
                 .then(results => {
-                    console.log(results);
                     let event  = new Event("search-results");   // create new event, add results
                 
                     if (results.error) {    // if there is an error give it
@@ -151,7 +195,7 @@ class View {
         console.log("View created.");
         
         // get where to add HTML
-        this.mainCont = document.querySelector(".js-view");
+        //this.mainCont = document.querySelector(".js-view");
         
         // add event listeners
         this.addListeners();
@@ -185,28 +229,50 @@ class View {
     /*** function to display the correct page based on the link ***/
     displayPage(link) {
         // clear contents
-        this.mainCont.innerHTML = "";
+        let mainCont = document.querySelector(".js-view");
+        mainCont.innerHTML = "";
+        let content = "";
         
+        // if user is on the home page, show it
+        if (link.classes.includes("home")) {
+            content = "<h2>High Scores</h2>";
+            content += "<p>Will be completed later.</p>";
+            content += "<p>Ignore the icon placeholders; they'll be replaced with FontAwesome icons.</p>";
+            content += "<p>Note: Currently the menu icon does not work.</p>";
+            content += "<p>Check out the other links like Kanji Overview and Kanji Search.</p>";
+            
+            mainCont.innerHTML = content;
+            let event  = new Event("page-loaded");
+            document.dispatchEvent(event);
+        }
         // if user is on the overview page, show it
-        if (link.classes.includes("review")) {
-            let content = "<h2>Kanji Overview</h2>";
-            content += "<aricle>";
+        else if (link.classes.includes("review")) {
+            content = "<h2>Kanji Overview</h2>";
+            content += "<aricle class='kanji-grades'>";
             // for each kanji level (1-6) add a button and title
             for (let i=0; i < 6; i++) {
                 content += "<div><h3>Kanji Grade Level " + (i+1) + "</h3>";
                 content += "<button class='grade-view' id='" + (i+1) + "'>View</button></div>";
             }
             content += "</aricle>";
+            content += "<artice class='kanji-info'></article>";
             
-            this.mainCont.innerHTML = content;
+            mainCont.innerHTML = content;
             let event  = new Event("page-loaded");
             document.dispatchEvent(event);
         }
-        
-        // if user is on the search page, show it
-        if (link.classes.includes("search")) {
+        else if (link.classes.includes("game")) {
+            content = "<h2>Review Game</h2>";
+            content += "<p>Will be completed later. </p>";
+            content += "<p>Check out the other links like Kanji Overview and Kanji Search.</p>";
             
-            let content = "<h2>Kanji Search</h2>";
+            mainCont.innerHTML = content;
+            let event  = new Event("page-loaded");
+            document.dispatchEvent(event);
+        }
+        // if user is on the search page, show it
+        else if (link.classes.includes("search")) {
+            content = "<h2>Kanji Search</h2>";
             content += "<form class='kanji-search'>";
             content += "<label for='kanji'>Enter a kanji character to look up.</label>";
             content += "<div>";
@@ -216,13 +282,13 @@ class View {
             content += "</form>";
             content += "<div class='search-result'></div>";
             
-            this.mainCont.innerHTML = content;
+            mainCont.innerHTML = content;
             let event  = new Event("page-loaded");
             document.dispatchEvent(event);
         }
     }
     
-    /*** for adding search results to Kanji Search page ***/
+    /*** for adding search results to pages, based on element class names ***/
     displaySearchResults(e) {
         // if user is searching for kanji and no kanji is found, display the message
         if (e.message && document.querySelector(".search-result")) {
@@ -237,30 +303,42 @@ class View {
             content += "<p>Grade Level: " + e.grade + "</p>";
             cont.innerHTML = content;
         }
+        // triggered when pressing back or next btn
+        else if (e.meaning && document.querySelector(".view-kanji")) {
+            let parent = document.querySelector(".kanji-info");
+            let oldNode = document.querySelector(".view-kanji");
+            
+            let newDiv = document.createElement("div");
+            newDiv.classList.add("view-kanji");
+            
+            let content = "<h3>" + e.kanji + "</h3>";
+            content += "<p>" + e.kunyomi[0] + ", " + e.onyomi[0] + "</p>";
+            content += "<p>" + e.kunyomi[1] + ", " + e.onyomi[1] + "</p>";
+            content += "<p>" + e.meaning + "</p>";
+            
+            newDiv.innerHTML = content;
+            parent.replaceChild(newDiv, oldNode);
+        }
         // might need to edit this later
-        else if (e.meaning && document.querySelector(".grade-view")) {
-            let content = "<h2>Kanji Overview</h2>";
-            content += "<article>";
+        else if (e.meaning && document.querySelector(".kanji-grades")) {
+            let gradeCont = document.querySelector(".kanji-grades");
+            gradeCont.style.display = "none";
+            
+            content = "<div><span class='close-btn'>Close Icon</span></div>";
+            content += "<div><span class='back-btn disabled'>Back Icon</span></div>";
             content += "<div class='view-kanji'>";
-            content += "<div><span>Close Icon</span></div>";
-            content += "<div><span>Back Icon</span></div>";
             content += "<h3>" + e.kanji + "</h3>";
             content += "<p>" + e.kunyomi[0] + ", " + e.onyomi[0] + "</p>";
             content += "<p>" + e.kunyomi[1] + ", " + e.onyomi[1] + "</p>";
             content += "<p>" + e.meaning + "</p>";
-            content += "<div><span>Next Icon</span></div>";
             content += "</div>"
-            content += "</article>";
+            content += "<div><span class='next-btn'>Next Icon</span></div>";
             
-            let cont = document.querySelector(".js-view");
+            let cont = document.querySelector(".kanji-info");
             cont.innerHTML = content;
-            let event  = new Event("added-view-buttons");
+            cont.style.display = "flex";    // set to none in controller
+            let event  = new Event("page-loaded");
             document.dispatchEvent(event);
-        } 
-        else if (e.meaning && document.querySelector(".view-kanji")) {
-            let cont = document.querySelector(".view-kanji");
-            let content = "<h3>" + e.kanji + "</h3>";
-            cont.innerHTML = content;
         }
     }
 }
