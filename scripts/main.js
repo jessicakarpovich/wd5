@@ -335,7 +335,7 @@ class View {
             let gradeCont = document.querySelector(".kanji-grades");
             gradeCont.style.display = "none";
             
-            content = "<div><span class='close-btn'>Close Icon</span></div>";
+            let content = "<div><span class='close-btn'>Close Icon</span></div>";
             content += "<div><span class='back-btn disabled'>Back Icon</span></div>";
             content += "<div class='view-kanji'>";
             content += "<h3>" + e.kanji + "</h3>";
