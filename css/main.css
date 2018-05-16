@@ -1,4 +1,4 @@
-body {
+.js-view, .kanji-search, .search-result, body {
   display: flex;
   flex-direction: column; }
 
@@ -17,32 +17,114 @@ ol, ul {
 a {
   text-decoration-line: none; }
 
+button {
+  border: none;
+  appearance: none; }
+
+/*-----------------*/
+/*    General    */
+/*-----------------*/
 html {
   font-size: 62.5%; }
 
 body {
-  font-size: 1.6rem; }
+  font-size: 1.8rem;
+  color: #535456; }
 
 h1 {
   font-size: 3rem; }
 
-.sidebar {
-  width: 28rem;
-  background-color: #eee; }
-  .sidebar li {
-    cursor: pointer; }
-  .sidebar .active {
-    background-color: #ccc; }
+h2 {
+  font-size: 2.5rem;
+  margin: 0 auto;
+  padding-bottom: 1rem;
+  color: #000; }
 
-.kanji-grades {
-  display: flex;
-  flex-direction: column; }
+h3 {
+  font-size: 2.2rem; }
 
-span {
-  cursor: pointer; }
+.textIndent {
+  display: inline-flex;
+  text-indent: -9999px; }
 
 .disabled {
   color: #999; }
+
+/*-----------------*/
+/*    Sidebar    */
+/*-----------------*/
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  min-width: 28rem;
+  margin-right: 2rem;
+  color: #535456;
+  background-color: #fcfcff;
+  font-size: 2.5rem; }
+  .sidebar li {
+    cursor: pointer; }
+  .sidebar .active {
+    color: #492d82;
+    background-color: #74D9FF; }
+
+/*-----------------*/
+/*  Kanji Overview */
+/*-----------------*/
+.kanji-grades {
+  display: flex;
+  flex-direction: column; }
+  .kanji-grades div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem; }
+    .kanji-grades div:nth-child(odd) {
+      background-color: #fcfcff; }
+
+.js-view {
+  width: calc(80% - 6rem);
+  margin-top: 2rem;
+  margin-left: 2rem; }
+
+.hidden {
+  display: none; }
+
+.kanji-info {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; }
+  .kanji-info .row {
+    display: flex;
+    align-items: center; }
+
+.close-btn {
+  align-self: flex-end; }
+
+.view-kanji {
+  margin: 2rem;
+  width: 30rem; }
+  .view-kanji h3 {
+    text-align: center;
+    font-size: 15rem; }
+
+.kanji-search, .search-result {
+  align-items: center;
+  margin-top: 1rem; }
+
+input {
+  width: 15rem;
+  font-size: 2rem; }
+
+button {
+  padding: 1rem;
+  margin: 1rem;
+  border-radius: 1rem;
+  background-color: #74D9FF; }
+
+.fa {
+  padding: 1rem;
+  font-size: 2.5rem;
+  cursor: pointer; }
 
 /*----------------*/
 /* Scrolling Content */
@@ -51,13 +133,17 @@ body {
   max-height: 100vh; }
 
 .content {
-  overflow: scroll;
   display: flex;
   height: calc(100vh - 7.6rem); }
 
+.js-view {
+  overflow: scroll; }
+
 header {
   display: flex;
-  padding: 2rem 0; }
+  padding: 2rem 0;
+  color: #000;
+  background-color: #74D9FF; }
   header h1 {
     margin: 0 auto; }
 

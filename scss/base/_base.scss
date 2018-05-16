@@ -1,48 +1,133 @@
+/*-----------------*/
+/*    General    */
+/*-----------------*/
 html {
     font-size: 62.5%;
 }
 
 body {
     font-size: $font-size;
+    color: $alt;
 }
-
-
-
 
 h1 {
     font-size: $font-size-h1;
 }
 
+h2 {
+    font-size: $font-size-h2;
+    margin: 0 auto;
+    padding-bottom: 1rem;
+    color: #000;
+}
 
+h3 {
+    font-size: $font-size-h3;
+}
 
+.textIndent {
+    display: inline-flex;
+    text-indent: -9999px;
+}
+
+.disabled {
+    color: #999;
+}
+
+/*-----------------*/
+/*    Sidebar    */
+/*-----------------*/
 .sidebar {
-    width: 28rem;
-    background-color: #eee;
+    display: flex;
+    flex-direction: column;
+    min-width: 28rem;
+    margin-right: 2rem;
+    color: $alt;
+    background-color: $color2;
+    font-size: $font-size-links;
     
     li {
         cursor: pointer;
     }
     
     .active {
-        background-color: #ccc;
+        color: $alt2;
+        background-color: $color;
     }
 }
 
 
-
+/*-----------------*/
+/*  Kanji Overview */
+/*-----------------*/
 .kanji-grades {
     display: flex;
     flex-direction: column;
+    div {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        
+        &:nth-child(odd) {
+            background-color: $color2;
+        }
+    }
+    
 }
 
 
-// currently all icons are spans
-// for the time being to make them look clickable, change pointer
-span {
-    cursor: pointer;
+.js-view {
+    width: calc(80% - 6rem);
+    margin-top: 2rem;
+    margin-left: 2rem;
+    @extend %flex-column;
+}
+
+.hidden {
+    display: none;
 }
 
 
-.disabled {
-    color: #999;
+.kanji-info {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    .row {
+        display: flex;
+        align-items: center;
+    }
+}
+
+.close-btn {
+    align-self: flex-end;
+}
+
+.view-kanji {
+    margin: 2rem;
+    width: 30rem;
+    
+    h3 {
+        text-align: center;
+        font-size: $kanji;
+    }
+}
+
+.kanji-search, .search-result {
+    @extend %flex-column;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+input {
+    width: 15rem;
+    font-size: 2rem;
+}
+
+button {
+    padding: 1rem;
+    margin: 1rem;
+    border-radius: 1rem;
+    background-color: $color;
 }

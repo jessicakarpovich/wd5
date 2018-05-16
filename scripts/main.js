@@ -47,8 +47,21 @@ class Controller {
             let nextBtn = document.querySelector(".next-btn");
             nextBtn.addEventListener("click", this.showNextKanji.bind(this));
         }
+        // if page has review form
+        if (document.querySelector(".review-form")) {
+            let form = document.querySelector(".review-form");
+            let level = document.querySelector("#level");
+            let num = document.querySelector("#num");
+            form.addEventListener("submit", function(e) {
+                e.preventDefault();
+                // Create new event and pass it the user input
+                let evt = new Event("get-level");
+                evt.id = level.value;
+                document.dispatchEvent(evt);
+            })
+        }
         
-        // if page has search button, add listener
+        // if page has search form, add listener
         if (document.querySelector(".kanji-search")) {
             let form = document.querySelector(".kanji-search");
             let input = document.querySelector("#kanji");
@@ -74,8 +87,12 @@ class Controller {
         this.kanjiArray = e.kanjiArray;
         this.index = 0;
         
-        // get the first kanji in array
-        this.getKanji();
+        if (document.querySelector(".active").classList.contains("js-game-link")) {
+            console.log(this.kanjiArray);
+        } else {
+            // get the first kanji in array
+            this.getKanji();
+        }
     }
     // display the previous kanji in the overview page
     showPreviousKanji(e) {
@@ -135,12 +152,17 @@ class Model {
     addListeners() {
         // listener to use fetch to get search results if input is valid (shows kanji details)
         document.addEventListener("get-search-results", this.getKanjiSearchResult.bind(this));
+        document.addEventListener("get-level", this.getKanjiByLevel.bind(this));
     }
     // function to get array of kanji based on grade level
     getKanjiByLevel(e) {
         const api_endpoint = "https://kanjialive-api.p.mashape.com/api/public/search/advanced/?grade=";
-        // get grade level based on view button id value
-        this.url = api_endpoint +  e.target.id;
+        if (e.target.id) {
+            // get grade level based on view button id value
+            this.url = api_endpoint +  e.target.id;
+        } else {
+            this.url = api_endpoint +  e.id;
+        }
         
         // use different headers object for this one, its super picky
         let header = new Headers();
@@ -184,10 +206,8 @@ class Model {
                     }
                     else if (results.kanji) {   // if there is kanji give it
                         event.kanji = results.kanji.character;
-                        event.kunyomi = [results.kanji.kunyomi.hiragana, 
-                                         results.kanji.kunyomi.romaji];
-                        event.onyomi = [results.kanji.onyomi.katakana, 
-                                        results.kanji.onyomi.romaji];
+                        event.kunyomi = results.kanji.kunyomi.hiragana;
+                        event.onyomi = results.kanji.onyomi.katakana;
                         event.meaning = results.kanji.meaning.english;
                         event.grade = results.references.grade;
                     }
@@ -213,6 +233,11 @@ class View {
         document.dispatchEvent(evt);
     }
     addListeners() {
+        let menu = document.querySelector(".js-menu");
+        menu.addEventListener("click", function() {
+            document.querySelector(".sidebar").classList.toggle("hidden");
+        });
+        
         /*** listener to display correct page ***/
         document.addEventListener("display", this.displayPage.bind(this));
         
@@ -271,8 +296,18 @@ class View {
         }
         else if (link.classes.includes("game")) {
             content = "<h2>Review Game</h2>";
-            content += "<p>Will be completed later. </p>";
-            content += "<p>Check out the other links like Kanji Overview and Kanji Search.</p>";
+            content += "<form class='review-form'>";
+            content += "<p>Enter the kanji grade level to review and how many questions you want. Once the game starts, you'll be given questions with a random kanji from that grade level and asked to enter the English meaning.</p>";
+            content += "<div>";
+            content += "<label for='level'>Kanji Grade Level</label>";
+            content += "<input type='number' step='1' name='level' id='level' min='1' max='6' value='1'>";
+            content += "</div>";
+            content += "<div>";
+            content += "<label for='num'>Number of Exercises</label>";
+            content += "<input type='number' step='1' name='num' id='num' min='1' max='50' value='10'>";
+            content += "</div>";
+            content += "<button>Start review game!</button>";
+            content += "</form>";
             
             mainCont.innerHTML = content;
             let event  = new Event("page-loaded");
@@ -313,16 +348,22 @@ class View {
         }
         // triggered when pressing back or next btn on overview page
         else if (e.meaning && document.querySelector(".view-kanji")) {
-            let parent = document.querySelector(".kanji-info");
+            let parent = document.querySelector(".row");
             let oldNode = document.querySelector(".view-kanji");
+            
+            if (parent.style.display === "none") {
+                let gradeCont = document.querySelector(".kanji-grades");
+                gradeCont.style.display = "none";
+                parent.style.display = "flex"; 
+            }
             
             let newDiv = document.createElement("div");
             newDiv.classList.add("view-kanji");
             
             let content = "<h3>" + e.kanji + "</h3>";
-            content += "<p>" + e.kunyomi[0] + ", " + e.onyomi[0] + "</p>";
-            content += "<p>" + e.kunyomi[1] + ", " + e.onyomi[1] + "</p>";
-            content += "<p>" + e.meaning + "</p>";
+            content += "<p><strong>Kunyomi</strong>: " + e.kunyomi + "</p>";
+            content += "<p><strong>Onyomi</strong>: " + e.onyomi + "</p>";
+            content += "<p><strong>Meaning</strong>: " + e.meaning + "</p>";
             
             newDiv.innerHTML = content;
             // replace node instead of using innerHTML to avoid relrendering of HTML elements
@@ -335,15 +376,15 @@ class View {
             let gradeCont = document.querySelector(".kanji-grades");
             gradeCont.style.display = "none";
             
-            let content = "<div><span class='close-btn'>Close Icon</span></div>";
-            content += "<div><span class='back-btn disabled'>Back Icon</span></div>";
+            let content = "<div class='close-btn'><span class='fa fa-times'></span></div>";
+            content += "<div class='row'><div><span class='back-btn disabled fa fa-arrow-left'></span></div>";
             content += "<div class='view-kanji'>";
             content += "<h3>" + e.kanji + "</h3>";
-            content += "<p>" + e.kunyomi[0] + ", " + e.onyomi[0] + "</p>";
-            content += "<p>" + e.kunyomi[1] + ", " + e.onyomi[1] + "</p>";
-            content += "<p>" + e.meaning + "</p>";
+            content += "<p><strong>Kunyomi</strong>: " + e.kunyomi + "</p>";
+            content += "<p><strong>Onyomi</strong>: " + e.onyomi + "</p>";
+            content += "<p><strong>Meaning</strong>: " + e.meaning + "</p>";
             content += "</div>"
-            content += "<div><span class='next-btn'>Next Icon</span></div>";
+            content += "<div><span class='next-btn fa fa-arrow-right'></span></div></div>";
             
             let cont = document.querySelector(".kanji-info");
             cont.innerHTML = content;

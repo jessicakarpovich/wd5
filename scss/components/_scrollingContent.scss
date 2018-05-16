@@ -7,8 +7,11 @@ body {
 }
 
 .content {
-    overflow: scroll;
     display: flex;
     // subtract height of header
     height: calc(100vh - 7.6rem);
+}
+
+.js-view {
+    overflow: scroll;
 }
