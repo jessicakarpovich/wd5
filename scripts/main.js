@@ -9,25 +9,15 @@ class Controller {
         this.model = new Model();
         this.view = new View();
         
-        // array and index to keep track of what kanji user is viewing
-        this.kanjiArray = [];
-        this.index = 0;
-        this.questCount = 1;
-        
         /*** add event listeners for custom events here ***/
-        /*** don't add them on page load or their # will increase on each reload ***/
-        // you can only add element listeners after the view has added them
         document.addEventListener("page-loaded", this.addListeners.bind(this));
-        /*** listeners for overview page View btn results ***/
-        document.addEventListener("show-overview", this.saveArrayGetDetails.bind(this));
-        
     }
     addListeners() {
         // if there are view buttons (user is on overview page) add listeners to view buttons
         if (document.querySelector(".grade-view")) {
             let viewBtns = document.querySelectorAll(".grade-view");
             for (let i=0; i < viewBtns.length; i++) {
-                viewBtns[i].addEventListener("click", this.model.getKanjiByLevel);
+                viewBtns[i].addEventListener("click", this.model.getKanjiByLevel.bind(this));
             }
         }
         // if on overview page the close button is clicked
@@ -43,26 +33,43 @@ class Controller {
             
             // add listener to back button
             let backBtn = document.querySelector(".back-btn");
-            backBtn.addEventListener("click", this.showPreviousKanji.bind(this));
+            backBtn.addEventListener("click", function() {
+                let evt = new Event("show-prev");
+                document.dispatchEvent(evt);
+            });
             // add listener to next button
             let nextBtn = document.querySelector(".next-btn");
-            nextBtn.addEventListener("click", this.showNextKanji.bind(this));
+            nextBtn.addEventListener("click", function() {
+                let evt = new Event("show-next");
+                document.dispatchEvent(evt);
+            });
         }
         // if page has review form
         if (document.querySelector(".review-form")) {
             let form = document.querySelector(".review-form");
             let level = document.querySelector("#level");
             let num = document.querySelector("#num");
-            this.questCount = num;
             form.addEventListener("submit", function(e) {
                 e.preventDefault();
                 // Create new event and pass it the user input
                 let evt = new Event("get-level");
                 evt.id = level.value;
+                evt.count = num.value;
+                evt.purpose = "game";
                 document.dispatchEvent(evt);
             })
         }
-        
+        // if page has game form
+        if (document.querySelector(".game-form")) {
+            let form = document.querySelector(".game-form");
+            let meaning = document.querySelector("#meaning");
+            form.addEventListener("submit", function(e) {
+                e.preventDefault();
+                let evt = new Event("check");
+                evt.meaning = meaning;
+                document.dispatchEvent(evt);
+            });
+        }
         // if page has search form, add listener
         if (document.querySelector(".kanji-search")) {
             let form = document.querySelector(".kanji-search");
@@ -76,77 +83,17 @@ class Controller {
             }, false);
         }
     }
-    getKanji(str) {
-        let query = "";
-        
-        if (str === "game") {
-            // get rand value based on array length
-            let randInt = Math.floor(Math.random() * (this.kanjiArray.length - 0)) + 0;
-            console.log(randInt);
-            query = this.kanjiArray[randInt].kanji.character;
-        }
-        else { // otherwise get kanji at current index
-            query = this.kanjiArray[this.index].kanji.character;
-        }   // create custom event and pass the kanji to get details for (to Model)
-        let evt = new Event("get-search-results");
-        evt.userValue = query;
-        evt.index = this.index + 1;
-        evt.max = this.kanjiArray.length;
-        document.dispatchEvent(evt);
-    }
-    // function to save kanji array when it is first aquired loaded, then show first kanji
-    saveArrayGetDetails(e) {
-        // save array and reset index
-        this.kanjiArray = e.kanjiArray;
-        this.index = 0;
-        
-        if (document.querySelector(".active").classList.contains("js-game-link")) {
-            console.log(this.kanjiArray);
-            this.getKanji("game");
-        } else {
-            // get the first kanji in array
-            this.getKanji("");
-        }
-    }
-    // display the previous kanji in the overview page
-    showPreviousKanji(e) {
-        // if moving back from last kanji in array, change styling of next button
-        if (this.index === this.kanjiArray.length - 1) {
-            document.querySelector(".next-btn").classList.remove("disabled");
-        }
-        // if you are going back to first kanji in array, change styling of back btn
-        if (this.index === 1) {     
-            e.target.classList.add("disabled");
-        }
-        // if currently not viewing the first kanji in array, subtract index and go back one
-        if (this.index > 0) {
-            this.index--;
-            
-            this.getKanji("");
-        }
-    }
-    // display the next kanji in the overview page
-    showNextKanji(e) {
-        // if going forward from first kanji, change styling of back btn
-        if (this.index === 0) {
-            document.querySelector(".back-btn").classList.remove("disabled");
-        }
-        // if about to show the last kanji, change styling of next btn
-        if (this.index === (this.kanjiArray.length-2)) {
-            e.target.classList.add("disabled");
-        }
-        // if currently not viewing the last kanji, add to index and show the next one
-        if (this.index < (this.kanjiArray.length - 1)) {
-            this.index++;
-            this.getKanji("");
-        }
-    }
 }
 
 
 class Model {
     constructor() {
         console.log("Model created");
+        
+        // array and index to keep track of what kanji user is viewing
+        this.kanjiArray = [];
+        this.index = 0;
+        this.questCount = 1;
         
         // add event listeners
         this.addListeners();
@@ -167,6 +114,9 @@ class Model {
         // listener to use fetch to get search results if input is valid (shows kanji details)
         document.addEventListener("get-search-results", this.getKanjiSearchResult.bind(this));
         document.addEventListener("get-level", this.getKanjiByLevel.bind(this));
+        document.addEventListener("get-kanji", this.getKanji.bind(this));
+        document.addEventListener("show-prev", this.showPreviousKanji.bind(this));
+        document.addEventListener("show-next", this.showNextKanji.bind(this));
     }
     // function to get array of kanji based on grade level
     getKanjiByLevel(e) {
@@ -191,8 +141,13 @@ class Model {
         fetch(request) 
                 .then(response => response.json())
                 .then(results => {
-                    let event  = new Event("show-overview");   // create new event, add results
+                    let event  = new Event("get-kanji")
+                    console.log(results);
                     event.kanjiArray = results;
+                    if (e.count) {
+                        this.questCount = e.count;
+                        event.purpose = e.purpose;
+                    }
                     document.dispatchEvent(event);
             })
                 .catch(function(error) {
@@ -232,6 +187,62 @@ class Model {
                 .catch(function(error) {
                     console.log(error);
             });
+        }
+    }
+    getKanji(e) {
+        if (e.kanjiArray) {
+            this.kanjiArray = e.kanjiArray;
+            this.index = 0;
+        }
+        
+        // create custom event and pass the kanji to get details for (to Model)
+        let query = "";
+        let evt = new Event("get-search-results");
+        if (e.purpose === "game") {
+            // get rand value based on array length
+            let randInt = Math.floor(Math.random() * (this.kanjiArray.length - 0)) + 0;
+            query = this.kanjiArray[randInt].kanji.character;
+            evt.max = this.questCount;
+        }
+        else { // otherwise get kanji at current index
+            query = this.kanjiArray[this.index].kanji.character;
+            evt.max = this.kanjiArray.length;
+        } 
+        evt.userValue = query;
+        evt.index = this.index + 1;
+        document.dispatchEvent(evt);
+    }
+    // display the previous kanji in the overview page
+    showPreviousKanji(e) {
+        // if moving back from last kanji in array, change styling of next button
+        if (this.index === this.kanjiArray.length - 1) {
+            document.querySelector(".next-btn").classList.remove("disabled");
+        }
+        // if you are going back to first kanji in array, change styling of back btn
+        if (this.index === 1) {     
+            e.target.classList.add("disabled");
+        }
+        // if currently not viewing the first kanji in array, subtract index and go back one
+        if (this.index > 0) {
+            this.index--;
+            
+            this.getKanji("");
+        }
+    }
+    // display the next kanji in the overview page
+    showNextKanji(e) {
+        // if going forward from first kanji, change styling of back btn
+        if (this.index === 0) {
+            document.querySelector(".back-btn").classList.remove("disabled");
+        }
+        // if about to show the last kanji, change styling of next btn
+        if (this.index === (this.kanjiArray.length-2)) {
+            e.target.classList.add("disabled");
+        }
+        // if currently not viewing the last kanji, add to index and show the next one
+        if (this.index < (this.kanjiArray.length - 1)) {
+            this.index++;
+            this.getKanji("");
         }
     }
 }
@@ -309,7 +320,7 @@ class View {
             document.dispatchEvent(event);
         }
         else if (link.classes.includes("game")) {
-            content = "<h2>Review Game</h2>";
+            content = "<h2 class='sec-title'>Review Game</h2>";
             content += "<form class='review-form'>";
             content += "<p>Enter the kanji grade level to review and how many questions you want. Once the game starts, you'll be given questions with a random kanji from that grade level and asked to enter the English meaning.</p>";
             content += "<div class='row'><div>";
@@ -406,8 +417,37 @@ class View {
                 parent.replaceChild(newDiv, oldNode);
             }
         }
-        else {
-            console.log(e);
+        // if the user started a review game
+        else if (document.querySelector(".review-form") || document.querySelector(".game-form")) {
+            let title = document.querySelector(".sec-title");
+            title.innerHTML = "Review Game - Level " + e.grade + " " + e.index + "/" + e.max;
+            
+            // if the game has already satrted, simply show the next question
+            if (document.querySelector(".game-form")) {
+                let parent = document.querySelector(".game-form");
+                let oldNode = document.querySelector("#quest");
+                let newEl = document.createElement("h3");
+                newEl.setAttribute("id", "quest");
+                newEl.innerHTML = e.kanji;
+                parent.replaceChild(newEl, oldNode);
+            } else {    // if it hasn't, build out all the content
+                let parent = document.querySelector(".js-view");
+                let oldNode = document.querySelector(".review-form");
+                let newEl = document.createElement("form");
+                newEl.classList.add("game-form");
+
+                let content = "<h3 id='quest'>" + e.kanji + "</h3>";
+                content += "<div class='row'>";
+                content += "<label for='meaning'>English meaning:</label>";
+                content += "<input type='text' name='meaning' id='meaning'>";
+                content += "<button>Submit Answer</button>";
+                content += "</div>";
+
+                newEl.innerHTML = content;
+                parent.replaceChild(newEl, oldNode);
+                let event  = new Event("page-loaded");
+                document.dispatchEvent(event);
+            }
         }
     }
 }

@@ -145,6 +145,17 @@ button {
 /*   Review Game  */
 /*-----------------*/
 .review-form {
+    @extend %flex-column;
+    align-items: center;
+    align-self: center;
+    width: 70rem;
+    div {
+        margin: 1rem 1rem;
+    }
+    label {
+        margin-right: 1rem;
+    }
+    
     @include mq(sm-up) {
         width: calc(90%);
         .row {
@@ -161,17 +172,25 @@ button {
             flex-direction: column;
         }
     }
-    
-    @extend %flex-column;
-    align-items: center;
+}
+
+.game-form {
     align-self: center;
-    width: 70rem;
-    
-    div {
-        margin: 1rem 1rem;
+    h3 {
+        text-align: center;
+        font-size: $kanji;
+    }
+    .row {
+        justify-content: center;
     }
     label {
         margin-right: 1rem;
+    }
+    @include mq(small) {
+        width: calc(90%);
+        .row {
+            flex-direction: column;
+        }
     }
 }
 
