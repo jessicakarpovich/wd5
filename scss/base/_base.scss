@@ -25,6 +25,18 @@ h3 {
     font-size: $font-size-h3;
 }
 
+input {
+    width: 15rem;
+    font-size: 2rem;
+}
+
+button {
+    padding: 1rem;
+    margin: 1rem;
+    border-radius: 1rem;
+    background-color: $color;
+}
+
 .textIndent {
     display: inline-flex;
     text-indent: -9999px;
@@ -32,6 +44,25 @@ h3 {
 
 .disabled {
     color: #999;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+}
+
+
+.js-view {
+    width: calc(100%);
+    margin-top: 2rem;
+    @extend %flex-column;
+}
+
+// hide right content on small screens when sidebar is expanded
+.sm-hidden {
+    @include mq(small) {
+        display: none;
+    }
 }
 
 /*-----------------*/
@@ -55,14 +86,19 @@ h3 {
         background-color: $color;
     }
 }
-
+/* declare at end, otherwise gets ignored */
+.hidden {
+    display: none;
+}
 
 /*-----------------*/
 /*  Kanji Overview */
 /*-----------------*/
+/* What user first sees */
 .kanji-grades {
     display: flex;
     flex-direction: column;
+    margin: 0 1rem;
     div {
         display: flex;
         justify-content: space-between;
@@ -76,37 +112,28 @@ h3 {
     
 }
 
-
-.js-view {
-    width: calc(80% - 6rem);
-    margin-top: 2rem;
-    margin-left: 2rem;
-    @extend %flex-column;
-}
-
-.hidden {
-    display: none;
-}
-
-
+/* What user sees after clicking View */
 .kanji-info {
     flex-direction: column;
     justify-content: center;
     align-items: center;
     
-    .row {
-        display: flex;
-        align-items: center;
-    }
+    /* .row is used here */
 }
 
+/* Button that hides .kanji-info */
 .close-btn {
     align-self: flex-end;
 }
 
+/* The actual kanji, kunyomi, onyomi, and meaning container */
 .view-kanji {
     margin: 2rem;
-    width: 30rem;
+    // remove width constraint on small screens
+    @include mq(small) {
+        width: auto;
+    }
+    width: 32rem;
     
     h3 {
         text-align: center;
@@ -114,20 +141,45 @@ h3 {
     }
 }
 
+/*-----------------*/
+/*   Review Game  */
+/*-----------------*/
+.review-form {
+    @include mq(sm-up) {
+        width: calc(90%);
+        .row {
+            flex-direction: column;
+        }
+        div {
+            display: flex;
+            align-items: center;
+        }
+    }
+    @include mq(small) {
+        div {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+    
+    @extend %flex-column;
+    align-items: center;
+    align-self: center;
+    width: 70rem;
+    
+    div {
+        margin: 1rem 1rem;
+    }
+    label {
+        margin-right: 1rem;
+    }
+}
+
+/*-----------------*/
+/*   Kanji Search  */
+/*-----------------*/
 .kanji-search, .search-result {
     @extend %flex-column;
     align-items: center;
     margin-top: 1rem;
-}
-
-input {
-    width: 15rem;
-    font-size: 2rem;
-}
-
-button {
-    padding: 1rem;
-    margin: 1rem;
-    border-radius: 1rem;
-    background-color: $color;
 }

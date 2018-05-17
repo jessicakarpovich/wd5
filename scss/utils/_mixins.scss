@@ -1,0 +1,18 @@
+// for media queries
+@mixin mq($size) {
+    @if $size == small {
+        @media (min-width: 320px) and (max-width: 699px) { @content; }
+    }
+    @elseif $size == medium {
+        @media (min-width: 700px) and (max-width: 999px) { @content; }
+    }
+    // For large screens
+    @elseif $size == large {
+        @media (min-width: 1000px) { @content; }
+    }
+    
+    // For overlapping small and medium rules
+    @elseif $size == sm-up {
+        @media (max-width: 999px) { @content; }
+    }
+}

@@ -236,6 +236,7 @@ class View {
         let menu = document.querySelector(".js-menu");
         menu.addEventListener("click", function() {
             document.querySelector(".sidebar").classList.toggle("hidden");
+            document.querySelector(".js-view").classList.toggle("sm-hidden");
         });
         
         /*** listener to display correct page ***/
@@ -269,9 +270,6 @@ class View {
         if (link.classes.includes("home")) {
             content = "<h2>High Scores</h2>";
             content += "<p>Will be completed later.</p>";
-            content += "<p>Ignore the icon placeholders; they'll be replaced with FontAwesome icons.</p>";
-            content += "<p>Note: Currently the menu icon does not work.</p>";
-            content += "<p>Check out the other links like Kanji Overview and Kanji Search.</p>";
             
             mainCont.innerHTML = content;
             // create new event so controller will know to add any necessary listeners
@@ -298,14 +296,14 @@ class View {
             content = "<h2>Review Game</h2>";
             content += "<form class='review-form'>";
             content += "<p>Enter the kanji grade level to review and how many questions you want. Once the game starts, you'll be given questions with a random kanji from that grade level and asked to enter the English meaning.</p>";
-            content += "<div>";
+            content += "<div class='row'><div>";
             content += "<label for='level'>Kanji Grade Level</label>";
             content += "<input type='number' step='1' name='level' id='level' min='1' max='6' value='1'>";
             content += "</div>";
             content += "<div>";
             content += "<label for='num'>Number of Exercises</label>";
             content += "<input type='number' step='1' name='num' id='num' min='1' max='50' value='10'>";
-            content += "</div>";
+            content += "</div></div>";
             content += "<button>Start review game!</button>";
             content += "</form>";
             

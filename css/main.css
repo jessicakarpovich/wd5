@@ -1,4 +1,4 @@
-.js-view, .kanji-search, .search-result, body {
+.js-view, .review-form, .kanji-search, .search-result, body {
   display: flex;
   flex-direction: column; }
 
@@ -43,12 +43,34 @@ h2 {
 h3 {
   font-size: 2.2rem; }
 
+input {
+  width: 15rem;
+  font-size: 2rem; }
+
+button {
+  padding: 1rem;
+  margin: 1rem;
+  border-radius: 1rem;
+  background-color: #74D9FF; }
+
 .textIndent {
   display: inline-flex;
   text-indent: -9999px; }
 
 .disabled {
   color: #999; }
+
+.row {
+  display: flex;
+  align-items: center; }
+
+.js-view {
+  width: calc(100%);
+  margin-top: 2rem; }
+
+@media (min-width: 320px) and (max-width: 699px) {
+  .sm-hidden {
+    display: none; } }
 
 /*-----------------*/
 /*    Sidebar    */
@@ -67,12 +89,18 @@ h3 {
     color: #492d82;
     background-color: #74D9FF; }
 
+/* declare at end, otherwise gets ignored */
+.hidden {
+  display: none; }
+
 /*-----------------*/
 /*  Kanji Overview */
 /*-----------------*/
+/* What user first sees */
 .kanji-grades {
   display: flex;
-  flex-direction: column; }
+  flex-direction: column;
+  margin: 0 1rem; }
   .kanji-grades div {
     display: flex;
     justify-content: space-between;
@@ -81,45 +109,58 @@ h3 {
     .kanji-grades div:nth-child(odd) {
       background-color: #fcfcff; }
 
-.js-view {
-  width: calc(80% - 6rem);
-  margin-top: 2rem;
-  margin-left: 2rem; }
-
-.hidden {
-  display: none; }
-
+/* What user sees after clicking View */
 .kanji-info {
   flex-direction: column;
   justify-content: center;
-  align-items: center; }
-  .kanji-info .row {
-    display: flex;
-    align-items: center; }
+  align-items: center;
+  /* .row is used here */ }
 
+/* Button that hides .kanji-info */
 .close-btn {
   align-self: flex-end; }
 
+/* The actual kanji, kunyomi, onyomi, and meaning container */
 .view-kanji {
   margin: 2rem;
-  width: 30rem; }
+  width: 32rem; }
+  @media (min-width: 320px) and (max-width: 699px) {
+    .view-kanji {
+      width: auto; } }
   .view-kanji h3 {
     text-align: center;
     font-size: 15rem; }
 
+/*-----------------*/
+/*   Review Game  */
+/*-----------------*/
+.review-form {
+  align-items: center;
+  align-self: center;
+  width: 70rem; }
+  @media (max-width: 999px) {
+    .review-form {
+      width: calc(90%); }
+      .review-form .row {
+        flex-direction: column; }
+      .review-form div {
+        display: flex;
+        align-items: center; } }
+  @media (min-width: 320px) and (max-width: 699px) {
+    .review-form div {
+      display: flex;
+      flex-direction: column; } }
+  .review-form div {
+    margin: 1rem 1rem; }
+  .review-form label {
+    margin-right: 1rem; }
+
+/*-----------------*/
+/*   Kanji Search  */
+/*-----------------*/
 .kanji-search, .search-result {
   align-items: center;
   margin-top: 1rem; }
-
-input {
-  width: 15rem;
-  font-size: 2rem; }
-
-button {
-  padding: 1rem;
-  margin: 1rem;
-  border-radius: 1rem;
-  background-color: #74D9FF; }
 
 .fa {
   padding: 1rem;
