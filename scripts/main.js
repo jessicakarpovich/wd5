@@ -12,6 +12,7 @@ class Controller {
         // array and index to keep track of what kanji user is viewing
         this.kanjiArray = [];
         this.index = 0;
+        this.questCount = 1;
         
         /*** add event listeners for custom events here ***/
         /*** don't add them on page load or their # will increase on each reload ***/
@@ -34,10 +35,10 @@ class Controller {
             // add listener to close btn; hide kanji results show grade levels
             let closeBtn = document.querySelector(".close-btn");
             closeBtn.addEventListener("click", function() {
-                let gradeCont = document.querySelector(".kanji-grades");
-                gradeCont.style.display = "flex";
-                let infoCont = document.querySelector(".kanji-info");
-                infoCont.style.display = "none";
+                // trigger view display active page event
+                let evt = new Event("display");
+                evt.classes = document.querySelector(".active").className;
+                document.dispatchEvent(evt);
             });
             
             // add listener to back button
@@ -52,6 +53,7 @@ class Controller {
             let form = document.querySelector(".review-form");
             let level = document.querySelector("#level");
             let num = document.querySelector("#num");
+            this.questCount = num;
             form.addEventListener("submit", function(e) {
                 e.preventDefault();
                 // Create new event and pass it the user input
@@ -74,11 +76,22 @@ class Controller {
             }, false);
         }
     }
-    getKanji() {
-        // create custom event and pass the kanji to get details for (to Model)
-        let query = this.kanjiArray[this.index].kanji.character;
+    getKanji(str) {
+        let query = "";
+        
+        if (str === "game") {
+            // get rand value based on array length
+            let randInt = Math.floor(Math.random() * (this.kanjiArray.length - 0)) + 0;
+            console.log(randInt);
+            query = this.kanjiArray[randInt].kanji.character;
+        }
+        else { // otherwise get kanji at current index
+            query = this.kanjiArray[this.index].kanji.character;
+        }   // create custom event and pass the kanji to get details for (to Model)
         let evt = new Event("get-search-results");
         evt.userValue = query;
+        evt.index = this.index + 1;
+        evt.max = this.kanjiArray.length;
         document.dispatchEvent(evt);
     }
     // function to save kanji array when it is first aquired loaded, then show first kanji
@@ -89,9 +102,10 @@ class Controller {
         
         if (document.querySelector(".active").classList.contains("js-game-link")) {
             console.log(this.kanjiArray);
+            this.getKanji("game");
         } else {
             // get the first kanji in array
-            this.getKanji();
+            this.getKanji("");
         }
     }
     // display the previous kanji in the overview page
@@ -108,7 +122,7 @@ class Controller {
         if (this.index > 0) {
             this.index--;
             
-            this.getKanji();
+            this.getKanji("");
         }
     }
     // display the next kanji in the overview page
@@ -124,7 +138,7 @@ class Controller {
         // if currently not viewing the last kanji, add to index and show the next one
         if (this.index < (this.kanjiArray.length - 1)) {
             this.index++;
-            this.getKanji();
+            this.getKanji("");
         }
     }
 }
@@ -210,6 +224,8 @@ class Model {
                         event.onyomi = results.kanji.onyomi.katakana;
                         event.meaning = results.kanji.meaning.english;
                         event.grade = results.references.grade;
+                        event.index = e.index;
+                        event.max = e.max;
                     }
                     document.dispatchEvent(event);
             })
@@ -278,7 +294,7 @@ class View {
         }
         // if user is on the overview page, show it
         else if (link.classes.includes("review")) {
-            content = "<h2>Kanji Overview</h2>";
+            content = "<h2 class='sec-title'>Kanji Overview</h2>";
             content += "<aricle class='kanji-grades'>";
             // for each kanji level (1-6) add a button and title
             for (let i=0; i < 6; i++) {
@@ -344,51 +360,54 @@ class View {
             content += "<p>Grade Level: " + e.grade + "</p>";
             cont.innerHTML = content;
         }
-        // triggered when pressing back or next btn on overview page
-        else if (e.meaning && document.querySelector(".view-kanji")) {
-            let parent = document.querySelector(".row");
-            let oldNode = document.querySelector(".view-kanji");
-            
-            if (parent.style.display === "none") {
-                let gradeCont = document.querySelector(".kanji-grades");
-                gradeCont.style.display = "none";
-                parent.style.display = "flex"; 
-            }
-            
-            let newDiv = document.createElement("div");
-            newDiv.classList.add("view-kanji");
-            
-            let content = "<h3>" + e.kanji + "</h3>";
-            content += "<p><strong>Kunyomi</strong>: " + e.kunyomi + "</p>";
-            content += "<p><strong>Onyomi</strong>: " + e.onyomi + "</p>";
-            content += "<p><strong>Meaning</strong>: " + e.meaning + "</p>";
-            
-            newDiv.innerHTML = content;
-            // replace node instead of using innerHTML to avoid relrendering of HTML elements
-            // this way only kanji info can be replaced instead of having to reload all btns too
-            parent.replaceChild(newDiv, oldNode);
-        }
-        // triggered when pressing view on overview page
+        // triggered on overview page
         else if (e.meaning && document.querySelector(".kanji-grades")) {
+            // modify title to show how which index the user is on
+            let title = document.querySelector(".sec-title");
+            title.innerHTML = "Kanji Overview - Level " + e.grade + " " + e.index + "/" + e.max;
+            
             // hide grade levels with view btns
             let gradeCont = document.querySelector(".kanji-grades");
             gradeCont.style.display = "none";
             
-            let content = "<div class='close-btn'><span class='fa fa-times'></span></div>";
-            content += "<div class='row'><div><span class='back-btn disabled fa fa-arrow-left'></span></div>";
-            content += "<div class='view-kanji'>";
-            content += "<h3>" + e.kanji + "</h3>";
-            content += "<p><strong>Kunyomi</strong>: " + e.kunyomi + "</p>";
-            content += "<p><strong>Onyomi</strong>: " + e.onyomi + "</p>";
-            content += "<p><strong>Meaning</strong>: " + e.meaning + "</p>";
-            content += "</div>"
-            content += "<div><span class='next-btn fa fa-arrow-right'></span></div></div>";
-            
+            // build content
             let cont = document.querySelector(".kanji-info");
-            cont.innerHTML = content;
             cont.style.display = "flex";    // set to none in controller, so change that here
-            let event  = new Event("page-loaded");
-            document.dispatchEvent(event);
+            
+            // if the view button was pressed build everything
+            if (!document.querySelector(".view-kanji")) {
+                let content = "<div class='close-btn'><span class='fa fa-times'></span></div>";
+                content += "<div class='row'><div><span class='back-btn disabled fa fa-arrow-left'></span></div>";
+                content += "<div class='view-kanji'>";
+                content += "<h3>" + e.kanji + "</h3>";
+                content += "<p><strong>Kunyomi</strong>: " + e.kunyomi + "</p>";
+                content += "<p><strong>Onyomi</strong>: " + e.onyomi + "</p>";
+                content += "<p><strong>Meaning</strong>: " + e.meaning + "</p>";
+                content += "</div>"
+                content += "<div><span class='next-btn fa fa-arrow-right'></span></div></div>";
+
+                cont.innerHTML = content;
+                let event  = new Event("page-loaded");
+                document.dispatchEvent(event);
+            } else {    // else, just replace the kanji info
+                let parent = document.querySelector(".row");
+                let oldNode = document.querySelector(".view-kanji");
+                let newDiv = document.createElement("div");
+                newDiv.classList.add("view-kanji");
+
+                let content = "<h3>" + e.kanji + "</h3>";
+                content += "<p><strong>Kunyomi</strong>: " + e.kunyomi + "</p>";
+                content += "<p><strong>Onyomi</strong>: " + e.onyomi + "</p>";
+                content += "<p><strong>Meaning</strong>: " + e.meaning + "</p>";
+                
+                newDiv.innerHTML = content;
+                // replace node instead of using innerHTML to avoid rerendering of HTML elements
+                // this way kanji info can be replaced instead of having to reload all btns too
+                parent.replaceChild(newDiv, oldNode);
+            }
+        }
+        else {
+            console.log(e);
         }
     }
 }
