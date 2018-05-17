@@ -66,8 +66,10 @@ class Controller {
             form.addEventListener("submit", function(e) {
                 e.preventDefault();
                 let evt = new Event("check");
-                evt.meaning = meaning;
+                evt.meaning = meaning.value;
+                form.reset();
                 document.dispatchEvent(evt);
+                
             });
         }
         // if page has search form, add listener
@@ -94,6 +96,8 @@ class Model {
         this.kanjiArray = [];
         this.index = 0;
         this.questCount = 1;
+        this.meaning = "";
+        this.correctCount = 0;
         
         // add event listeners
         this.addListeners();
@@ -117,6 +121,7 @@ class Model {
         document.addEventListener("get-kanji", this.getKanji.bind(this));
         document.addEventListener("show-prev", this.showPreviousKanji.bind(this));
         document.addEventListener("show-next", this.showNextKanji.bind(this));
+        document.addEventListener("check", this.checkAnswer.bind(this));
     }
     // function to get array of kanji based on grade level
     getKanjiByLevel(e) {
@@ -180,7 +185,10 @@ class Model {
                         event.meaning = results.kanji.meaning.english;
                         event.grade = results.references.grade;
                         event.index = e.index;
+                    }
+                    if (e.max) {
                         event.max = e.max;
+                        this.meaning = results.kanji.meaning.english;
                     }
                     document.dispatchEvent(event);
             })
@@ -198,7 +206,7 @@ class Model {
         // create custom event and pass the kanji to get details for (to Model)
         let query = "";
         let evt = new Event("get-search-results");
-        if (e.purpose === "game") {
+        if (e.purpose === "game" || e === "game") {
             // get rand value based on array length
             let randInt = Math.floor(Math.random() * (this.kanjiArray.length - 0)) + 0;
             query = this.kanjiArray[randInt].kanji.character;
@@ -220,7 +228,7 @@ class Model {
         }
         // if you are going back to first kanji in array, change styling of back btn
         if (this.index === 1) {     
-            e.target.classList.add("disabled");
+            document.querySelector(".back-btn").classList.add("disabled");
         }
         // if currently not viewing the first kanji in array, subtract index and go back one
         if (this.index > 0) {
@@ -237,12 +245,42 @@ class Model {
         }
         // if about to show the last kanji, change styling of next btn
         if (this.index === (this.kanjiArray.length-2)) {
-            e.target.classList.add("disabled");
+            document.querySelector(".next-btn").classList.add("disabled");
         }
         // if currently not viewing the last kanji, add to index and show the next one
         if (this.index < (this.kanjiArray.length - 1)) {
             this.index++;
             this.getKanji("");
+        }
+    }
+    checkAnswer(e) {
+        // if the answer is not blank,
+        if (e.meaning) {
+            // there could be more than one right answer, split string into array
+            let rightAnswers = this.meaning.split(',');
+            let isValid = false;
+            // check user answer against each array value
+            for (let i=0; i < rightAnswers.length; i++) {
+                if (e.meaning.trim() === rightAnswers[i].trim()) {
+                    // if correct, set is valid to true
+                    isValid = true;
+                }
+            }
+            if (isValid) {
+                this.index++;
+                this.correctCount++;
+                if (this.index < this.questCount) {
+                    this.getKanji("game");
+                } else {
+                    let evt = new Event("game-done");
+                    evt.correct = this.correctCount;
+                    evt.total = this.questCount;
+                    evt.percent = Math.round(this.correctCount / this.questCount);
+                    document.dispatchEvent(evt);
+                }
+            }
+            console.log(isValid);
+            console.log(this.meaning);
         }
     }
 }
