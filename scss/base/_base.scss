@@ -25,6 +25,10 @@ h3 {
     font-size: $font-size-h3;
 }
 
+h4 {
+    text-align: center;
+}
+
 input {
     width: 15rem;
     font-size: 2rem;
@@ -133,6 +137,9 @@ button {
     @include mq(small) {
         width: auto;
     }
+    @include mq(medium) {
+        width: 25rem;
+    }
     width: 32rem;
     
     h3 {
@@ -186,11 +193,24 @@ button {
     label {
         margin-right: 1rem;
     }
-    @include mq(small) {
+    @include mq(sm-up) {
         width: calc(90%);
         .row {
             flex-direction: column;
         }
+    }
+}
+
+#game-results {
+    align-self: center;
+    @extend %flex-column;
+    align-items: center;
+    font-size: $font-size-h3;
+    h3, p:not(:last-child) {
+        font-size: $font-size-h1;
+    }
+    p:last-child {
+        text-align: center;
     }
 }
 

@@ -1,4 +1,4 @@
-.js-view, .review-form, .kanji-search, .search-result, body {
+.js-view, .review-form, #game-results, .kanji-search, .search-result, body {
   display: flex;
   flex-direction: column; }
 
@@ -42,6 +42,9 @@ h2 {
 
 h3 {
   font-size: 2.2rem; }
+
+h4 {
+  text-align: center; }
 
 input {
   width: 15rem;
@@ -127,6 +130,9 @@ button {
   @media (min-width: 320px) and (max-width: 699px) {
     .view-kanji {
       width: auto; } }
+  @media (min-width: 700px) and (max-width: 999px) {
+    .view-kanji {
+      width: 25rem; } }
   .view-kanji h3 {
     text-align: center;
     font-size: 15rem; }
@@ -169,6 +175,15 @@ button {
       width: calc(90%); }
       .game-form .row {
         flex-direction: column; } }
+
+#game-results {
+  align-self: center;
+  align-items: center;
+  font-size: 2.2rem; }
+  #game-results h3, #game-results p:not(:last-child) {
+    font-size: 3rem; }
+  #game-results p:last-child {
+    text-align: center; }
 
 /*-----------------*/
 /*   Kanji Search  */

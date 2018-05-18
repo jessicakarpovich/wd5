@@ -6,11 +6,13 @@ window.addEventListener("load", function() {
 class Controller {
     constructor() {
         console.log("Controller created.");
-        this.model = new Model();
-        this.view = new View();
-        
         /*** add event listeners for custom events here ***/
         document.addEventListener("page-loaded", this.addListeners.bind(this));
+        // get saved high scores
+        document.addEventListener("get-scores", this.loadScores.bind(this));
+        
+        this.model = new Model();
+        this.view = new View();
     }
     addListeners() {
         // if there are view buttons (user is on overview page) add listeners to view buttons
@@ -66,10 +68,30 @@ class Controller {
             form.addEventListener("submit", function(e) {
                 e.preventDefault();
                 let evt = new Event("check");
-                evt.meaning = meaning.value;
+                
+                if (document.getElementById("answer")) {
+                    if (document.getElementById("answer").style.display !== "none") {
+                        evt.cont = true;
+
+                        let event = new Event("hide-answer");
+                        document.dispatchEvent(event);
+                    }
+                }
+                evt.userAns = meaning.value;
                 form.reset();
                 document.dispatchEvent(evt);
                 
+            });
+        }
+        // if page has game results
+        if (document.querySelector("#game-results")) {
+            // add listener to close btn; hide results show review form
+            let closeBtn = document.querySelector(".close-btn");
+            closeBtn.addEventListener("click", function() {
+                // trigger view display active page event
+                let evt = new Event("display");
+                evt.classes = document.querySelector(".active").className;
+                document.dispatchEvent(evt);
             });
         }
         // if page has search form, add listener
@@ -85,6 +107,19 @@ class Controller {
             }, false);
         }
     }
+    loadScores() {
+        let result = [];
+        if (localStorage.getItem("highscores") === null) {
+            for (let i=0; i<6; i++) {
+                result[i] = "No high scores yet";;
+            }
+        } else {
+            result = JSON.parse(localStorage.getItem("highscores"));
+        }
+        let evt = new Event("show-scores");
+        evt.array = result;
+        document.dispatchEvent(evt);
+    }
 }
 
 
@@ -96,6 +131,7 @@ class Model {
         this.kanjiArray = [];
         this.index = 0;
         this.questCount = 1;
+        this.level = 0;
         this.meaning = "";
         this.correctCount = 0;
         
@@ -129,35 +165,35 @@ class Model {
         if (e.target.id) {
             // get grade level based on view button id value
             this.url = api_endpoint +  e.target.id;
+            this.level = e.target.id;
         } else {
             this.url = api_endpoint +  e.id;
+            this.level = e.id;
         }
         
         // use different headers object for this one, its super picky
         let header = new Headers();
         // pass the key, do it as on mashape
-        header.append("X-Mashape-Key", 
-                              "JDlJP9InDzmshwRyiMytBPVcr73Dp1xoF0ijsnG0tdmZvVhwNB");
+        header.append("X-Mashape-Key", "JDlJP9InDzmshwRyiMytBPVcr73Dp1xoF0ijsnG0tdmZvVhwNB");
         let init = { headers: header };
         
         //Build request object and pass it to fetch
         const request = new Request(this.url, init);
         
         fetch(request) 
-                .then(response => response.json())
-                .then(results => {
-                    let event  = new Event("get-kanji")
-                    console.log(results);
-                    event.kanjiArray = results;
-                    if (e.count) {
-                        this.questCount = e.count;
-                        event.purpose = e.purpose;
-                    }
-                    document.dispatchEvent(event);
-            })
-                .catch(function(error) {
-                    console.log(error);
-            });
+            .then(response => response.json())
+            .then(results => {
+                let event  = new Event("get-kanji")
+                event.kanjiArray = results;
+                if (e.count) {
+                    this.questCount = e.count;
+                    event.purpose = e.purpose;
+                }
+                document.dispatchEvent(event);
+        })
+            .catch(function(error) {
+                console.log(error);
+        });
     }
     
     getKanjiSearchResult(e) {
@@ -185,8 +221,6 @@ class Model {
                         event.meaning = results.kanji.meaning.english;
                         event.grade = results.references.grade;
                         event.index = e.index;
-                    }
-                    if (e.max) {
                         event.max = e.max;
                         this.meaning = results.kanji.meaning.english;
                     }
@@ -201,6 +235,7 @@ class Model {
         if (e.kanjiArray) {
             this.kanjiArray = e.kanjiArray;
             this.index = 0;
+            this.correctCount = 0;
         }
         
         // create custom event and pass the kanji to get details for (to Model)
@@ -222,13 +257,16 @@ class Model {
     }
     // display the previous kanji in the overview page
     showPreviousKanji(e) {
+        let evt = new Event("back-next");
         // if moving back from last kanji in array, change styling of next button
         if (this.index === this.kanjiArray.length - 1) {
-            document.querySelector(".next-btn").classList.remove("disabled");
+            evt.next = true;
+            document.dispatchEvent(evt);
         }
         // if you are going back to first kanji in array, change styling of back btn
-        if (this.index === 1) {     
-            document.querySelector(".back-btn").classList.add("disabled");
+        if (this.index === 1) {
+            evt.back = true;
+            document.dispatchEvent(evt);
         }
         // if currently not viewing the first kanji in array, subtract index and go back one
         if (this.index > 0) {
@@ -239,13 +277,16 @@ class Model {
     }
     // display the next kanji in the overview page
     showNextKanji(e) {
+        let evt = new Event("back-next");
         // if going forward from first kanji, change styling of back btn
         if (this.index === 0) {
-            document.querySelector(".back-btn").classList.remove("disabled");
+            evt.back = true;
+            document.dispatchEvent(evt);
         }
         // if about to show the last kanji, change styling of next btn
         if (this.index === (this.kanjiArray.length-2)) {
-            document.querySelector(".next-btn").classList.add("disabled");
+            evt.next = true;
+            document.dispatchEvent(evt);
         }
         // if currently not viewing the last kanji, add to index and show the next one
         if (this.index < (this.kanjiArray.length - 1)) {
@@ -254,14 +295,22 @@ class Model {
         }
     }
     checkAnswer(e) {
+        if (e.cont) {
+            this.index++;
+            if (this.index < this.questCount) {
+                this.getKanji("game");
+            } else {    // get game results
+                this.getGameResults();
+            }
+        }
         // if the answer is not blank,
-        if (e.meaning) {
+        else if (e.userAns.trim() !== "") {
             // there could be more than one right answer, split string into array
             let rightAnswers = this.meaning.split(',');
             let isValid = false;
             // check user answer against each array value
             for (let i=0; i < rightAnswers.length; i++) {
-                if (e.meaning.trim() === rightAnswers[i].trim()) {
+                if (e.userAns.trim() === rightAnswers[i].trim()) {
                     // if correct, set is valid to true
                     isValid = true;
                 }
@@ -271,17 +320,63 @@ class Model {
                 this.correctCount++;
                 if (this.index < this.questCount) {
                     this.getKanji("game");
-                } else {
-                    let evt = new Event("game-done");
-                    evt.correct = this.correctCount;
-                    evt.total = this.questCount;
-                    evt.percent = Math.round(this.correctCount / this.questCount);
-                    document.dispatchEvent(evt);
+                } else {    // get game results
+                    this.getGameResults();
                 }
+            } else {
+                let event = new Event("wrong-answer");
+                event.answer = this.meaning;
+                document.dispatchEvent(event);
             }
-            console.log(isValid);
-            console.log(this.meaning);
         }
+    }
+    getGameResults() {
+        let evt = new Event("game-done");
+        // get number correct out of total
+        evt.correct = this.correctCount;
+        evt.total = this.questCount;
+        // calc percentage, round it too
+        let decimal = this.correctCount / this.questCount;
+        decimal = decimal * 100;
+        evt.percent = decimal.toFixed(2);
+        
+        this.saveHighScore(decimal.toFixed(2));
+        
+        // based on result, change message
+        if (evt.percent > 90) {
+            evt.message = "Great job, you got this!";
+        } else if (evt.percent > 70) {
+            evt.message = "Good work!";
+        } else if (evt.percent > 50) {
+            evt.message = "Not bad, but you might want to review.";
+        } else {
+            evt.message = "If you need to review, check out the Kanji Overview section.";
+        }
+        
+        document.dispatchEvent(evt);
+    }
+    saveHighScore(num) {
+        console.log(num);
+        console.log(this.level);
+        let scores = [];
+        
+        // if there is no local storage, add 0s for blank scores
+        if (localStorage.getItem("highscores") === null) {
+            for (let i=0; i < 6; i++) {
+                scores[i] = "0.00";
+            }
+            // set current high score
+            scores[this.level-1] = num;
+        } else {
+            // otherwise, load the existing scores
+            scores = JSON.parse(localStorage.getItem("highscores"));
+            // if the current score is greater than the previous one, replace it
+            if (parseFloat(scores[this.level-1]) < num) {
+                scores[this.level-1] = num;
+            }
+        }
+        // set the updated data in local storage
+        localStorage.setItem("highscores", JSON.stringify(scores));
     }
 }
 
@@ -323,6 +418,36 @@ class View {
         
         /*** listeners for kanji search results ***/
         document.addEventListener("search-results", this.displaySearchResults);
+        // add listener for back next buttons on overview page
+        document.addEventListener("back-next", this.toggleBackNext);
+        // add listener for wrong answer in review game
+        document.addEventListener("wrong-answer", this.showRightAnswer);
+        // add listener to hide right answer when needed
+        document.addEventListener("hide-answer", this.hideAnswer);
+        // add listener to when game is finished
+        document.addEventListener("game-done", this.showGameResults);
+        // add listener to show scores on home page
+        document.addEventListener("show-scores", this.showScores);
+    }
+    showScores(e) {
+        console.log(e.array);
+        let mainCont = document.querySelector(".js-view");
+        let content = "<h2>High Scores</h2>";
+        content += "<article class='highscrores'>";
+        for (let i=0; i < e.array.length; i++) {
+            content += "<div><h3>Kanji Grade Level " + (i+1) + "</h3>";
+            if (e.array[i] == 0.00) {
+                content += "<p>No high score yet</p>";
+            } else {
+                content += "<p>" + e.array[i] + "</p></div>";
+            }
+        } 
+        content += "</article>";
+        
+        mainCont.innerHTML = content;
+        // create new event so controller will know to add any necessary listeners
+        let event  = new Event("page-loaded");
+        document.dispatchEvent(event);
     }
     /*** function to display the correct page based on the link ***/
     displayPage(link) {
@@ -331,15 +456,10 @@ class View {
         mainCont.innerHTML = "";
         let content = "";
         
-        // if user is on the home page, show it
+        // if user is on the home page, trigger event to load high scores from local storage
         if (link.classes.includes("home")) {
-            content = "<h2>High Scores</h2>";
-            content += "<p>Will be completed later.</p>";
-            
-            mainCont.innerHTML = content;
-            // create new event so controller will know to add any necessary listeners
-            let event  = new Event("page-loaded");
-            document.dispatchEvent(event);
+            let evt = new Event("get-scores");
+            document.dispatchEvent(evt);
         }
         // if user is on the overview page, show it
         else if (link.classes.includes("review")) {
@@ -478,7 +598,7 @@ class View {
                 content += "<div class='row'>";
                 content += "<label for='meaning'>English meaning:</label>";
                 content += "<input type='text' name='meaning' id='meaning'>";
-                content += "<button>Submit Answer</button>";
+                content += "<button id='submit'>Submit Answer</button>";
                 content += "</div>";
 
                 newEl.innerHTML = content;
@@ -487,5 +607,62 @@ class View {
                 document.dispatchEvent(event);
             }
         }
+    }   
+    // on overview page, toggle disabled class to style back and next buttons
+    toggleBackNext(e) {
+        if (e.back) {
+            document.querySelector(".back-btn").classList.toggle("disabled");
+        } else if (e.next) {
+            document.querySelector(".next-btn").classList.toggle("disabled");
+        }
+    }
+    // show the right anser to the user
+    showRightAnswer(e) {
+        let parent = document.querySelector(".game-form");
+        let newEl = document.createElement("div");
+        //newEl.classList.add("row");
+        
+        if (document.querySelector("#answer")) {
+            let oldNode = document.querySelector("#answer");
+            oldNode.style.display = "flex";
+            
+            newEl.setAttribute("id", "answer");
+        
+            let content = "<h4>Incorrect Answer: </h4>";
+            content += "<div class='row'<p>Accepted answers are: " + e.answer + "</p>";
+            content += "<button>Next</button></div>";
+            newEl.innerHTML = content;
+            
+            parent.replaceChild(newEl, oldNode);
+        } else {
+            newEl.setAttribute("id", "answer");
+        
+            let content = "<h4>Incorrect Answer: </h4>";
+            content += "<div class='row'><p>Accepted answers are: " + e.answer + "</p>";
+            content += "<button type='submit'>Continue</button></div>";
+            newEl.innerHTML = content;
+            parent.appendChild(newEl);
+        }
+        document.querySelector("#submit").disabled = true;
+    }
+    // once the user hits next, hide the answer
+    hideAnswer() {
+        document.querySelector("#answer").style.display = "none";
+        document.querySelector("#submit").disabled = false;
+    }
+    showGameResults(e) {
+        let cont = document.querySelector(".js-view");
+        let content = "<h2>Review Game - Complete!</h2>";
+        content += "<div class='close-btn'><span class='fa fa-times'></span></div>";
+        content += "<article id='game-results'>";
+        content += "<h3>Congrats!</h3>";
+        content += "<p>You got: " + e.correct + "/" + e.total + "</p>";
+        content += "<p>" + e.percent + "%</p>";
+        content += "<p>" + e.message + "</p>";
+        content += "</article>";
+        
+        cont.innerHTML = content;
+        let event  = new Event("page-loaded");
+        document.dispatchEvent(event);
     }
 }
