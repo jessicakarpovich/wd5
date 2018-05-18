@@ -116,7 +116,7 @@ class Controller {
         // if local storage is empty, set up the array
         if (localStorage.getItem("highscores") === null) {
             for (let i=0; i<6; i++) {
-                result[i] = "No high scores yet";;
+                result[i] = 0.00;
             }
         } else {    // otherwise get the scores
             result = JSON.parse(localStorage.getItem("highscores"));
