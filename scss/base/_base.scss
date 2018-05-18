@@ -19,6 +19,7 @@ h2 {
     margin: 0 auto;
     padding-bottom: 1rem;
     color: #000;
+    text-align: center;
 }
 
 h3 {
@@ -69,6 +70,11 @@ button {
     }
 }
 
+/* Button that hides .kanji-info, congrats page */
+.close-btn {
+    align-self: flex-end;
+}
+
 /*-----------------*/
 /*    Sidebar    */
 /*-----------------*/
@@ -94,6 +100,20 @@ button {
 .hidden {
     display: none;
 }
+
+/*-----------------*/
+/*   High Scores  */
+/*-----------------*/
+.highscores > div {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 1rem;
+    padding: 2.75rem 1rem;
+    &:nth-child(odd) {
+        background-color: $color2;
+    }
+}
+
 
 /*-----------------*/
 /*  Kanji Overview */
@@ -123,11 +143,6 @@ button {
     align-items: center;
     
     /* .row is used here */
-}
-
-/* Button that hides .kanji-info */
-.close-btn {
-    align-self: flex-end;
 }
 
 /* The actual kanji, kunyomi, onyomi, and meaning container */
