@@ -1,6 +1,11 @@
 .js-view, .review-form, #game-results, .kanji-search, .search-result, body {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  flex-direction: column; }
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column; }
 
 html, body,
 header, footer, section, article,
@@ -15,11 +20,14 @@ ol, ul {
   list-style-type: none; }
 
 a {
-  text-decoration-line: none; }
+  -webkit-text-decoration-line: none;
+          text-decoration-line: none; }
 
 button {
   border: none;
-  appearance: none; }
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none; }
 
 /*-----------------*/
 /*    General    */
@@ -58,6 +66,8 @@ button {
   background-color: #74D9FF; }
 
 .textIndent {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
   display: inline-flex;
   text-indent: -9999px; }
 
@@ -65,8 +75,12 @@ button {
   color: #999; }
 
 .row {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  align-items: center; }
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center; }
 
 .js-view {
   width: calc(100%);
@@ -78,7 +92,8 @@ button {
 
 /* Button that hides .kanji-info, congrats page */
 .close-btn {
-  align-self: flex-end; }
+  -ms-flex-item-align: end;
+      align-self: flex-end; }
 
 /*-----------------*/
 /* Loading Spinner */
@@ -86,26 +101,48 @@ button {
 .fa-spinner {
   width: 1.8rem;
   height: 1.8rem;
-  align-self: center;
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center;
   cursor: auto;
-  animation: spin 10s linear infinite;
-  animation-play-state: paused; }
+  -webkit-animation: spin 10s linear infinite;
+          animation: spin 10s linear infinite;
+  -webkit-animation-play-state: paused;
+          animation-play-state: paused; }
 
 .active-spinner {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  animation-play-state: running; }
+  -webkit-animation-play-state: running;
+          animation-play-state: running; }
+
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0turn);
+            transform: rotate(0turn); }
+  100% {
+    -webkit-transform: rotate(1turn);
+            transform: rotate(1turn); } }
 
 @keyframes spin {
   0% {
-    transform: rotate(0turn); }
+    -webkit-transform: rotate(0turn);
+            transform: rotate(0turn); }
   100% {
-    transform: rotate(1turn); } }
+    -webkit-transform: rotate(1turn);
+            transform: rotate(1turn); } }
 /*-----------------*/
 /*    Sidebar    */
 /*-----------------*/
 .sidebar {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  flex-direction: column;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
   min-width: 28rem;
   margin-right: 2rem;
   color: #535456;
@@ -125,8 +162,12 @@ button {
 /*   High Scores  */
 /*-----------------*/
 .highscores > div {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  justify-content: space-between;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
   margin: 0 1rem;
   padding: 2.75rem 1rem; }
   .highscores > div:nth-child(odd) {
@@ -137,22 +178,40 @@ button {
 /*-----------------*/
 /* What user first sees */
 .kanji-grades {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  flex-direction: column;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
   margin: 0 1rem; }
   .kanji-grades div {
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+            justify-content: space-between;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center;
     padding: 1rem; }
     .kanji-grades div:nth-child(odd) {
       background-color: #fcfcff; }
 
 /* What user sees after clicking View */
 .kanji-info {
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
   /* .row is used here */ }
 
 /* The actual kanji, kunyomi, onyomi, and meaning container */
@@ -173,8 +232,12 @@ button {
 /*   Review Game  */
 /*-----------------*/
 .review-form {
-  align-items: center;
-  align-self: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center;
   width: 70rem; }
   .review-form div {
     margin: 1rem 1rem; }
@@ -184,33 +247,56 @@ button {
     .review-form {
       width: calc(90%); }
       .review-form .row {
-        flex-direction: column; }
+        -webkit-box-orient: vertical;
+        -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+                flex-direction: column; }
       .review-form div {
+        display: -webkit-box;
+        display: -ms-flexbox;
         display: flex;
-        align-items: center; } }
+        -webkit-box-align: center;
+            -ms-flex-align: center;
+                align-items: center; } }
   @media (min-width: 320px) and (max-width: 699px) {
     .review-form div {
+      display: -webkit-box;
+      display: -ms-flexbox;
       display: flex;
-      flex-direction: column; } }
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+          -ms-flex-direction: column;
+              flex-direction: column; } }
 
 .game-form {
-  align-self: center; }
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center; }
   .game-form h3 {
     text-align: center;
     font-size: 15rem; }
   .game-form .row {
-    justify-content: center; }
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center; }
   .game-form label {
     margin-right: 1rem; }
   @media (max-width: 999px) {
     .game-form {
       width: calc(90%); }
       .game-form .row {
-        flex-direction: column; } }
+        -webkit-box-orient: vertical;
+        -webkit-box-direction: normal;
+            -ms-flex-direction: column;
+                flex-direction: column; } }
 
 #game-results {
-  align-self: center;
-  align-items: center;
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
   font-size: 2.2rem; }
   #game-results h3, #game-results p:not(:last-child) {
     font-size: 3rem; }
@@ -221,7 +307,9 @@ button {
 /*   Kanji Search  */
 /*-----------------*/
 .kanji-search, .search-result {
-  align-items: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
   margin-top: 1rem; }
 
 .fa {
@@ -236,6 +324,8 @@ body {
   max-height: 100vh; }
 
 .content {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
   height: calc(100vh - 7.6rem); }
 
@@ -243,6 +333,8 @@ body {
   overflow: scroll; }
 
 header {
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
   padding: 2rem 0;
   color: #000;
@@ -250,4 +342,3 @@ header {
   header h1 {
     margin: 0 auto; }
 
-/*# sourceMappingURL=main.css.map */
