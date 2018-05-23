@@ -170,6 +170,10 @@ class Model {
     }
     // function to get array of kanji based on grade level
     getKanjiByLevel(e) {
+        // start loading spinner
+        let spinEvent = new Event("spin");
+        document.dispatchEvent(spinEvent);
+        
         const api_endpoint = "https://kanjialive-api.p.mashape.com/api/public/search/advanced/?grade=";
         if (e.target.id) {
             // get grade level based on view button id value
@@ -206,6 +210,10 @@ class Model {
     }
     // get specific kanji details using fetch request
     getKanjiSearchResult(e) {
+        // start spin animation
+        let spinEvent = new Event("spin");
+        document.dispatchEvent(spinEvent);
+        
         // if the user didn't leave the search field blank, continue
         if (e.userValue.trim() !== "") {
             // build the url
@@ -446,6 +454,8 @@ class View {
         document.addEventListener("game-done", this.showGameResults);
         // add listener to show scores on home page
         document.addEventListener("show-scores", this.showScores);
+        // handle spin animation
+        document.addEventListener("spin", this.spin);
     }
     // function to show high scores
     showScores(e) {
@@ -525,6 +535,7 @@ class View {
             content += "<button>Search</button>";
             content += "</div>";
             content += "</form>";
+            content += "<i class='fa fa-spinner' style='display:none;'></i>";
             content += "<div class='search-result'></div>";
             
             mainCont.innerHTML = content;
@@ -532,9 +543,21 @@ class View {
             document.dispatchEvent(event);
         }
     }
+    spin() {
+        let spinner = document.querySelector(".fa-spinner");
+        spinner.classList.toggle("active-spinner");
+        if (spinner.style.display === "none") {
+            spinner.style.display = "flex";
+        } else {
+            spinner.style.display = "none";
+        }
+    }
     
     /*** for adding search results to pages, based on element class names ***/
     displaySearchResults(e) {
+        let spinEvent = new Event("spin");
+        document.dispatchEvent(spinEvent);
+        
         // if user is searching for kanji and no kanji is found, display the message
         if (e.message && document.querySelector(".search-result")) {
             let cont = document.querySelector(".search-result");
