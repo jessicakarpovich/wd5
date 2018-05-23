@@ -210,12 +210,12 @@ class Model {
     }
     // get specific kanji details using fetch request
     getKanjiSearchResult(e) {
-        // start spin animation
-        let spinEvent = new Event("spin");
-        document.dispatchEvent(spinEvent);
-        
         // if the user didn't leave the search field blank, continue
         if (e.userValue.trim() !== "") {
+            // start spin animation
+            let spinEvent = new Event("spin");
+            document.dispatchEvent(spinEvent);
+            
             // build the url
             const api_endpoint = "https://kanjialive-api.p.mashape.com/api/public/kanji/";
             this.url = api_endpoint + e.userValue.trim();
@@ -496,6 +496,7 @@ class View {
             // for each kanji level (1-6) add a button and title
             for (let i=0; i < 6; i++) {
                 content += "<div><h3>Kanji Grade Level " + (i+1) + "</h3>";
+                content += "<i class='fa fa-spinner' style='display:none;'></i>";
                 content += "<button class='grade-view' id='" + (i+1) + "'>View</button></div>";
             }
             content += "</aricle>";
@@ -519,6 +520,7 @@ class View {
             content += "<input type='number' step='1' name='num' id='num' min='1' max='50' value='10'>";
             content += "</div></div>";
             content += "<button>Start review game!</button>";
+            content += "<i class='fa fa-spinner' style='display:none;'></i>";
             content += "</form>";
             
             mainCont.innerHTML = content;
@@ -543,13 +545,35 @@ class View {
             document.dispatchEvent(event);
         }
     }
-    spin() {
-        let spinner = document.querySelector(".fa-spinner");
-        spinner.classList.toggle("active-spinner");
-        if (spinner.style.display === "none") {
-            spinner.style.display = "flex";
+    spin(e) {
+        let spinner = "";
+        let id = 0;
+        let viewBtns = document.getElementsByClassName("grade-view");
+        if (document.querySelector(".view-kanji") || document.querySelector(".game-form")) {
+            // pass
+        } else if (viewBtns.length > 0) {
+            for (let i=0; i < viewBtns.length; i++) {
+                if (e.explicitOriginalTarget == viewBtns[i]) {
+                    id = i;
+                    let spinners = document.querySelectorAll(".fa-spinner");
+                    spinner = spinners[i];
+                    
+                    spinner.classList.toggle("active-spinner");
+                    if (spinner.style.display === "none") {
+                        spinner.style.display = "flex";
+                    } else {
+                        spinner.style.display = "none";
+                    }
+                }
+            }
         } else {
-            spinner.style.display = "none";
+            spinner = document.querySelector(".fa-spinner");
+            spinner.classList.toggle("active-spinner");
+            if (spinner.style.display === "none") {
+                spinner.style.display = "flex";
+            } else {
+                spinner.style.display = "none";
+            }
         }
     }
     
