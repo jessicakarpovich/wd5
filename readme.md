@@ -13,7 +13,3 @@ The Overview page lists the available kanji levels. If the user chooses to view 
 The Review Game allows the user to select how many questions and from what grade level to review. Kanji from that grade level are randomly presented and the user is prompted to give the English translation. Once all questions are answered, the score is calculated and high scores are saved into local storage.
 
 The Kanji Search page is for looking up kanji and finding their grade level and English meaning.
-
-## Current Functionality ##
-
-Responsive styling and all functionality is now complete. Feel free to try it out!

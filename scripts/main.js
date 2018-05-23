@@ -48,7 +48,7 @@ class Controller {
                 document.dispatchEvent(evt);
             });
         }
-        // if page has review form
+        // if page has review form - for the game
         if (document.querySelector(".review-form")) {
             let form = document.querySelector(".review-form");
             let level = document.querySelector("#level");
@@ -111,6 +111,7 @@ class Controller {
             }, false);
         }
     }
+    // load highscores from local storage
     loadScores() {
         let result = [];
         // if local storage is empty, set up the array
@@ -157,7 +158,7 @@ class Model {
     addListeners() {
         // listener to use fetch to get search results if input is valid (shows kanji details)
         document.addEventListener("get-search-results", this.getKanjiSearchResult.bind(this));
-        // listener to get kanji array be grade level
+        // listener to get kanji array by grade level
         document.addEventListener("get-level", this.getKanjiByLevel.bind(this));
         // to determine what kanji needs to be fetched
         document.addEventListener("get-kanji", this.getKanji.bind(this));
@@ -179,7 +180,7 @@ class Model {
             // get grade level based on view button id value
             this.url = api_endpoint +  e.target.id;
             this.level = e.target.id;   // set the kanji level
-        } else {    // or be custom event id
+        } else {    // or by custom event id
             this.url = api_endpoint +  e.id;
             this.level = e.id;          // set the kanji level
         }
@@ -202,6 +203,7 @@ class Model {
                     this.questCount = e.count;
                     event.purpose = e.purpose;  // this is to know if it is for the game
                 }
+            // dispatch event to get kanji details
                 document.dispatchEvent(event);
         })
             .catch(function(error) {
@@ -226,7 +228,7 @@ class Model {
             fetch(request) 
                 .then(response => response.json())
                 .then(results => {
-                    let event  = new Event("search-results");   // create new event, add results
+                    let event  = new Event("search-results");  // create new event, show results
                 
                     if (results.error) {    // if there is an error give it
                         event.message = "No kanji of " + e.userValue + " in database.";
@@ -252,7 +254,7 @@ class Model {
     // function to determine what kanji to get
     getKanji(e) {
         // if passed an array, set it and reset the index and correct count
-        // this means a new array has been loaded
+        // this means a new array has been loaded (new game or overview level)
         if (e.kanjiArray) {
             this.kanjiArray = e.kanjiArray;
             this.index = 0;
@@ -424,7 +426,7 @@ class View {
             document.querySelector(".js-view").classList.toggle("sm-hidden");
         });
         
-        /*** listener to display correct page ***/
+        /*** listener to display correct page from sidebar ***/
         document.addEventListener("display", this.displayPage.bind(this));
         
         /*** this is to change active class for sidebar links ***/
@@ -443,6 +445,11 @@ class View {
         }
         
         /*** listeners for kanji search results ***/
+        // add listener to show scores on home page
+        document.addEventListener("show-scores", this.showScores);
+        // handle spin animation
+        document.addEventListener("spin", this.spin);
+        // show kanji search results (when single kanji fetch request is made)
         document.addEventListener("search-results", this.displaySearchResults);
         // add listener for back next buttons on overview page
         document.addEventListener("back-next", this.toggleBackNext);
@@ -452,10 +459,6 @@ class View {
         document.addEventListener("hide-answer", this.hideAnswer);
         // add listener to when game is finished
         document.addEventListener("game-done", this.showGameResults);
-        // add listener to show scores on home page
-        document.addEventListener("show-scores", this.showScores);
-        // handle spin animation
-        document.addEventListener("spin", this.spin);
     }
     // function to show high scores
     showScores(e) {
@@ -545,19 +548,23 @@ class View {
             document.dispatchEvent(event);
         }
     }
+    /*** function for toggling the loading spinner animation on load ***/
     spin(e) {
         let spinner = "";
         let id = 0;
         let viewBtns = document.getElementsByClassName("grade-view");
         if (document.querySelector(".view-kanji") || document.querySelector(".game-form")) {
-            // pass
+            // pass, only add spinner to kanji search and inital load in overview and game
         } else if (viewBtns.length > 0) {
+            // if on overview page, find which level view btn was clicked
             for (let i=0; i < viewBtns.length; i++) {
+                // for the view btn that was clicked, animate the spinner next to it
                 if (e.explicitOriginalTarget == viewBtns[i]) {
                     id = i;
                     let spinners = document.querySelectorAll(".fa-spinner");
                     spinner = spinners[i];
                     
+                    // toggle the animation and dispaly property
                     spinner.classList.toggle("active-spinner");
                     if (spinner.style.display === "none") {
                         spinner.style.display = "flex";
@@ -566,7 +573,9 @@ class View {
                     }
                 }
             }
+        // if spinner was triggered outside of overview page
         } else {
+            // don't bother with the for loop, just toggle the spinner (there is only one)
             spinner = document.querySelector(".fa-spinner");
             spinner.classList.toggle("active-spinner");
             if (spinner.style.display === "none") {
@@ -579,24 +588,12 @@ class View {
     
     /*** for adding search results to pages, based on element class names ***/
     displaySearchResults(e) {
+        // when displaying search results, toggle spinner (if it was started, stop it)
         let spinEvent = new Event("spin");
         document.dispatchEvent(spinEvent);
         
-        // if user is searching for kanji and no kanji is found, display the message
-        if (e.message && document.querySelector(".search-result")) {
-            let cont = document.querySelector(".search-result");
-            let content = "<p>" + e.message + "</p>";
-            cont.innerHTML = content;
-        }
-        // if the kanji is found, show the meaning and grade level
-        else if (e.meaning && document.querySelector(".search-result")) {
-            let cont = document.querySelector(".search-result");
-            let content = "<p>Meaning: " + e.meaning + "</p>";
-            content += "<p>Grade Level: " + e.grade + "</p>";
-            cont.innerHTML = content;
-        }
         // triggered on overview page
-        else if (e.meaning && document.querySelector(".kanji-grades")) {
+        if (e.meaning && document.querySelector(".kanji-grades")) {
             // modify title to show how which index the user is on
             let title = document.querySelector(".sec-title");
             title.innerHTML = "Kanji Overview - Level " + e.grade + " " + e.index + "/" + e.max;
@@ -641,12 +638,12 @@ class View {
                 parent.replaceChild(newDiv, oldNode);
             }
         }
-        // if the user started a review game
+        // if the user started a review game - triggered on review game
         else if (document.querySelector(".review-form") || document.querySelector(".game-form")) {  // update the title
             let title = document.querySelector(".sec-title");
             title.innerHTML = "Review Game - Level " + e.grade + " " + e.index + "/" + e.max;
             
-            // if the game has already satrted, simply show the next question
+            // if the game has already started, simply show the next question
             if (document.querySelector(".game-form")) {
                 let parent = document.querySelector(".game-form");
                 let oldNode = document.querySelector("#quest");
@@ -673,6 +670,20 @@ class View {
                 document.dispatchEvent(event);
             }
         }
+        /* the following two are triggered on kanji search page */
+        // if user is searching for kanji and no kanji is found, display the message
+        else if (e.message && document.querySelector(".search-result")) {
+            let cont = document.querySelector(".search-result");
+            let content = "<p>" + e.message + "</p>";
+            cont.innerHTML = content;
+        }
+        // if the kanji is found, show the meaning and grade level
+        else if (e.meaning && document.querySelector(".search-result")) {
+            let cont = document.querySelector(".search-result");
+            let content = "<p>Meaning: " + e.meaning + "</p>";
+            content += "<p>Grade Level: " + e.grade + "</p>";
+            cont.innerHTML = content;
+        }
     }   
     // on overview page, toggle disabled class to style back and next buttons
     toggleBackNext(e) {
@@ -682,11 +693,13 @@ class View {
             document.querySelector(".next-btn").classList.toggle("disabled");
         }
     }
-    // show the right anser to the user
+    /* the following functions are for the review game page */
+    // show the right anser to the user - 
+    // triggered in review game after user enters a wrong answer
     showRightAnswer(e) {
         let parent = document.querySelector(".game-form");
         let newEl = document.createElement("div");
-        // if element with #answer exists, replace with new content
+        // if element with #answer exists, replace with new content, show it
         if (document.querySelector("#answer")) {
             let oldNode = document.querySelector("#answer");
             oldNode.style.display = "flex";
@@ -711,7 +724,7 @@ class View {
         // disable Submit Answer button
         document.querySelector("#submit").disabled = true;
     }
-    // once the user hits next, hide the answer
+    // in review game if user got answer wrong, once they hit next, hide the answer
     hideAnswer() {
         document.querySelector("#answer").style.display = "none";
         document.querySelector("#submit").disabled = false;

@@ -81,6 +81,26 @@ button {
   align-self: flex-end; }
 
 /*-----------------*/
+/* Loading Spinner */
+/*-----------------*/
+.fa-spinner {
+  width: 1.8rem;
+  height: 1.8rem;
+  align-self: center;
+  cursor: auto;
+  animation: spin 10s linear infinite;
+  animation-play-state: paused; }
+
+.active-spinner {
+  display: flex;
+  animation-play-state: running; }
+
+@keyframes spin {
+  0% {
+    transform: rotate(0turn); }
+  100% {
+    transform: rotate(1turn); } }
+/*-----------------*/
 /*    Sidebar    */
 /*-----------------*/
 .sidebar {
@@ -204,23 +224,6 @@ button {
   align-items: center;
   margin-top: 1rem; }
 
-.fa-spinner {
-  width: 1.8rem;
-  height: 1.8rem;
-  align-self: center;
-  cursor: auto;
-  animation: spin 10s linear infinite;
-  animation-play-state: paused; }
-
-.active-spinner {
-  display: flex;
-  animation-play-state: running; }
-
-@keyframes spin {
-  0% {
-    transform: rotate(0turn); }
-  100% {
-    transform: rotate(1turn); } }
 .fa {
   padding: 1rem;
   font-size: 2.5rem;
